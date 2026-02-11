@@ -1,1 +1,1 @@
-Intership task submissions and analysis files.
+Internship task submissions and analysis files.
