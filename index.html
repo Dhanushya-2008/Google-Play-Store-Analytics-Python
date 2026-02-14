@@ -1,190 +1,151 @@
-import os
-import webbrowser
-from datetime import datetime
-import pytz
-import pandas as pd
-import plotly.express as px
-import plotly.io as pio
-
-# ---------------- Load Dataset ----------------
-def load_data():
-    file_path = "googleplaystore.csv"  # Replace with your CSV path
-    df = pd.read_csv(file_path)
-    df = df.dropna(subset=['Rating'])
-    df['Installs'] = df['Installs'].str.replace('[+,]', '', regex=True).astype(int)
-    df['Reviews'] = pd.to_numeric(df['Reviews'], errors='coerce')
-    df['Price'] = df['Price'].str.replace('$','').astype(float)
-    df['Last Updated'] = pd.to_datetime(df['Last Updated'], errors='coerce')
-    
-    df['Size'] = df['Size'].replace('Varies with device', '0')
-    df['Size'] = df['Size'].str.replace('M','').str.replace('k','').astype(float)
-    return df
-
-# ---------------- Generate Charts ----------------
-def generate_charts(df):
-    charts = {}
-
-    # Task 1 - Ratings vs Reviews
-    top_reviews = df.nlargest(10, 'Reviews')
-    fig1 = px.bar(top_reviews, x='App', y='Rating', text='Rating', title='Ratings vs Reviews (Top 10)')
-    charts['task1'] = pio.to_html(fig1, full_html=False, include_plotlyjs='cdn')
-
-    # Task 2 - Free vs Paid Apps
-    type_counts = df['Type'].value_counts().reset_index()
-    type_counts.columns = ['Type','Count']
-    fig2 = px.pie(type_counts, names='Type', values='Count', title='Free vs Paid Apps')
-    charts['task2'] = pio.to_html(fig2, full_html=False, include_plotlyjs=False)
-
-    # Task 3 - Category Install Distribution
-    cat_installs = df.groupby('Category')['Installs'].sum().sort_values(ascending=False).head(10).reset_index()
-    fig3 = px.bar(cat_installs, x='Category', y='Installs', title='Top 10 Categories by Installs')
-    charts['task3'] = pio.to_html(fig3, full_html=False, include_plotlyjs=False)
-
-    # Task 4 - Cumulative Installs Over Time
-    monthly_installs = df.groupby(df['Last Updated'].dt.to_period('M'))['Installs'].sum().reset_index()
-    monthly_installs['Last Updated'] = monthly_installs['Last Updated'].astype(str)
-    fig4 = px.line(monthly_installs, x='Last Updated', y='Installs', markers=True, title='Cumulative Installs Over Time')
-    charts['task4'] = pio.to_html(fig4, full_html=False, include_plotlyjs=False)
-
-    # Task 5 - App Size vs Rating Bubble Chart
-    fig5 = px.scatter(df, x='Size', y='Rating', size='Size', hover_data=['App'], color='Rating', color_continuous_scale='Viridis', title='App Size vs Rating Bubble Chart')
-    charts['task5'] = pio.to_html(fig5, full_html=False, include_plotlyjs=False)
-
-    # Task 6 - Total Installs Trend
-    daily_installs = df.groupby(df['Last Updated'].dt.date)['Installs'].sum().reset_index()
-    fig6 = px.line(daily_installs, x='Last Updated', y='Installs', markers=True, title='Total Installs Trend')
-    charts['task6'] = pio.to_html(fig6, full_html=False, include_plotlyjs=False)
-
-    return charts
-
-# ---------------- Build Dashboard ----------------
-def open_dashboard():
-    tz = pytz.timezone("Asia/Kolkata")
-    now = datetime.now(tz)
-    current_hour = now.hour
-
-    df = load_data()
-    charts = generate_charts(df)
-
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Google Play Store Analytics Dashboard</title>
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <style>
-            body{{font-family: Arial, sans-serif; margin:20px; background:#f9f9f9;}}
-            .header{{display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:30px;}}
-            .header img{{height:40px;}}
-            h1{{font-size:24px; margin:0;}}
-            .task{{margin-bottom:50px; padding:15px; background:white; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}}
-            .warning{{color:red; font-weight:bold; margin-top:10px;}}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg">
-            <h1>Google Play Store Analytics Dashboard</h1>
-        </div>
-    """
-
-    # Task 1 - Always visible
-    html += f"""
-    <div class="task">
-        <h2>Task 1 – Ratings vs Reviews</h2>
-        {charts['task1']}
-    </div>
-    """
-
-    # Task 2 - 1PM–2PM
-    if 13 <= current_hour < 14:
-        html += f"""
-        <div class="task">
-            <h2>Task 2 – Free vs Paid Apps</h2>
-            {charts['task2']}
-        </div>
-        """
-    else:
-        html += """
-        <div class="task">
-            <h2>Task 2 – Free vs Paid Apps</h2>
-            <div class="warning">Available only between 1 PM and 2 PM IST.</div>
-        </div>
-        """
-
-    # Task 3 - 6PM–8PM
-    if 18 <= current_hour < 20:
-        html += f"""
-        <div class="task">
-            <h2>Task 3 – Category Install Distribution</h2>
-            {charts['task3']}
-        </div>
-        """
-    else:
-        html += """
-        <div class="task">
-            <h2>Task 3 – Category Install Distribution</h2>
-            <div class="warning">Available only between 6 PM and 8 PM IST.</div>
-        </div>
-        """
-
-    # Task 4 - 4PM–6PM
-    if 16 <= current_hour < 18:
-        html += f"""
-        <div class="task">
-            <h2>Task 4 – Cumulative Installs Over Time</h2>
-            {charts['task4']}
-        </div>
-        """
-    else:
-        html += """
-        <div class="task">
-            <h2>Task 4 – Cumulative Installs Over Time</h2>
-            <div class="warning">Available only between 4 PM and 6 PM IST.</div>
-        </div>
-        """
-
-    # Task 5 - 5PM–7PM
-    if 17 <= current_hour < 19:
-        html += f"""
-        <div class="task">
-            <h2>Task 5 – App Size vs Rating Bubble Chart</h2>
-            {charts['task5']}
-        </div>
-        """
-    else:
-        html += """
-        <div class="task">
-            <h2>Task 5 – App Size vs Rating Bubble Chart</h2>
-            <div class="warning">Available only between 5 PM and 7 PM IST.</div>
-        </div>
-        """
-
-    # Task 6 - 6PM–9PM
-    if 18 <= current_hour < 21:
-        html += f"""
-        <div class="task">
-            <h2>Task 6 – Total Installs Trend</h2>
-            {charts['task6']}
-        </div>
-        """
-    else:
-        html += """
-        <div class="task">
-            <h2>Task 6 – Total Installs Trend</h2>
-            <div class="warning">Available only between 6 PM and 9 PM IST.</div>
-        </div>
-        """
-
-    html += "</body></html>"
-
-    # Save as index.html
-    file_name = "index.html"
-    with open(file_name, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    webbrowser.open("file://" + os.path.abspath(file_name))
-
-# ---------------- Run ----------------
-open_dashboard()
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e2beb928",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3bbd9d30",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "import os, webbrowser\n",
+    "\n",
+    "dashboard_html = \"\"\"\n",
+    "<!DOCTYPE html>\n",
+    "<html>\n",
+    "<head>\n",
+    "    <meta charset=\"UTF-8\">\n",
+    "    <title>Google Play Store Dashboard</title>\n",
+    "\n",
+    "    <style>\n",
+    "        body{\n",
+    "            font-family: Arial, sans-serif;\n",
+    "            margin: 0;\n",
+    "            padding: 20px;\n",
+    "            background: white;\n",
+    "        }\n",
+    "\n",
+    "        .header{\n",
+    "            display: flex;\n",
+    "            align-items: center;\n",
+    "            justify-content: center;\n",
+    "            gap: 15px;\n",
+    "            margin-bottom: 30px;\n",
+    "        }\n",
+    "\n",
+    "        .header img{\n",
+    "            height: 40px;\n",
+    "        }\n",
+    "\n",
+    "        h1{\n",
+    "            font-size: 24px;\n",
+    "            margin: 0;\n",
+    "        }\n",
+    "\n",
+    "        .task{\n",
+    "            margin-bottom: 40px;\n",
+    "        }\n",
+    "\n",
+    "        iframe{\n",
+    "            width: 100%;\n",
+    "            height: 450px;\n",
+    "            border: 1px solid #ccc;\n",
+    "        }\n",
+    "    </style>\n",
+    "</head>\n",
+    "\n",
+    "<body>\n",
+    "\n",
+    "<div class=\"header\">\n",
+    "    <img src=\"https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg\">\n",
+    "    <h1>Google Play Store Analytics Dashboard</h1>\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"task\">\n",
+    "    <h2>Task 1 – Ratings vs Reviews</h2>\n",
+    "    <iframe src=\"Task1.html\"></iframe>\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"task\">\n",
+    "    <h2>Task 2 – Free vs Paid Apps</h2>\n",
+    "    <iframe src=\"Task2.html\"></iframe>\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"task\">\n",
+    "    <h2>Task 3 – Category Install Distribution</h2>\n",
+    "    <iframe src=\"Task3.html\"></iframe>\n",
+    "</div>\n",
+    "\n",
+     "<div class=\"task\">\n",
+    "    <h2>Task 4– Cumulative Installs Distribution</h2>\n",
+    "    <iframe src=\"Task4.html\"></iframe>\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"task\">\n",
+    "    <h2>Task 5–App Size vs Rating Bubble Chart</h2>\n",
+    "    <iframe src=\"Task5.html\"></iframe>\n",
+    "</div>\n",
+    "\n",
+    "<div class=\"task\">\n",
+    "    <h2>Task 6–Total Installs Trend</h2>\n",
+    "    <iframe src=\"Task6.html\"></iframe>\n",
+    "</div>\n",
+    "\n",
+    "</body>\n",
+    "</html>\n",
+    "\"\"\"\n",
+    "\n",
+    "with open(\"dashboard.html\", \"w\", encoding=\"utf-8\") as f:\n",
+    "    f.write(dashboard_html)\n",
+    "\n",
+    "webbrowser.open(\"file://\" + os.path.abspath(\"dashboard.html\"))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "4d31620d",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.14.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+ }
