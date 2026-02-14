@@ -1,77 +1,62 @@
 import os
-import io
-import base64
 import webbrowser
 from datetime import datetime
 import pytz
-import matplotlib.pyplot as plt
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
 
-# ---------------- Helper to Convert Plot to Base64 ----------------
-def plot_to_base64(fig):
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png', bbox_inches='tight')
-    buf.seek(0)
-    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-    plt.close(fig)
-    return img_base64
+# ---------------- Load Dataset ----------------
+def load_data():
+    file_path = "googleplaystore.csv"  # Replace with your CSV
+    df = pd.read_csv(file_path)
+    
+    # Basic cleaning
+    df = df.dropna(subset=['Rating'])
+    df['Installs'] = df['Installs'].str.replace('[+,]', '', regex=True).astype(int)
+    df['Reviews'] = pd.to_numeric(df['Reviews'], errors='coerce')
+    df['Price'] = df['Price'].str.replace('$','').astype(float)
+    df['Last Updated'] = pd.to_datetime(df['Last Updated'], errors='coerce')
+    
+    df['Size'] = df['Size'].replace('Varies with device', '0')
+    df['Size'] = df['Size'].str.replace('M','').str.replace('k','').astype(float)
+    
+    return df
 
-# ---------------- Generate Sample Charts ----------------
-def generate_charts():
+# ---------------- Generate Interactive Charts ----------------
+def generate_charts(df):
     charts = {}
 
     # Task 1 - Ratings vs Reviews
-    fig, ax = plt.subplots(figsize=(6,4))
-    apps = ['App A', 'App B', 'App C', 'App D']
-    ratings = [4.2, 4.5, 4.0, 3.8]
-    ax.bar(apps, ratings, color='skyblue')
-    ax.set_title("Ratings vs Reviews")
-    ax.set_ylabel("Rating")
-    charts['task1'] = plot_to_base64(fig)
+    top_reviews = df.nlargest(10, 'Reviews')
+    fig1 = px.bar(top_reviews, x='App', y='Rating', title='Ratings vs Reviews (Top 10)', text='Rating')
+    charts['task1'] = pio.to_html(fig1, full_html=False, include_plotlyjs='cdn')
 
     # Task 2 - Free vs Paid Apps
-    fig, ax = plt.subplots(figsize=(6,4))
-    types = ['Free', 'Paid']
-    counts = [120, 45]
-    ax.pie(counts, labels=types, autopct='%1.1f%%', colors=['#FF9999','#66B3FF'])
-    ax.set_title("Free vs Paid Apps")
-    charts['task2'] = plot_to_base64(fig)
+    type_counts = df['Type'].value_counts().reset_index()
+    type_counts.columns = ['Type', 'Count']
+    fig2 = px.pie(type_counts, names='Type', values='Count', title='Free vs Paid Apps')
+    charts['task2'] = pio.to_html(fig2, full_html=False, include_plotlyjs=False)
 
     # Task 3 - Category Install Distribution
-    fig, ax = plt.subplots(figsize=(6,4))
-    categories = ['Game', 'Tools', 'Social', 'Education']
-    installs = [500000, 300000, 450000, 200000]
-    ax.bar(categories, installs, color='orange')
-    ax.set_title("Category Install Distribution")
-    ax.set_ylabel("Installs")
-    charts['task3'] = plot_to_base64(fig)
+    cat_installs = df.groupby('Category')['Installs'].sum().sort_values(ascending=False).head(10).reset_index()
+    fig3 = px.bar(cat_installs, x='Category', y='Installs', title='Top 10 Categories by Installs')
+    charts['task3'] = pio.to_html(fig3, full_html=False, include_plotlyjs=False)
 
     # Task 4 - Cumulative Installs Over Time
-    fig, ax = plt.subplots(figsize=(6,4))
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May']
-    cum_installs = [10000, 25000, 40000, 60000, 85000]
-    ax.plot(months, cum_installs, marker='o', color='green')
-    ax.set_title("Cumulative Installs Over Time")
-    ax.set_ylabel("Installs")
-    charts['task4'] = plot_to_base64(fig)
+    monthly_installs = df.groupby(df['Last Updated'].dt.to_period('M'))['Installs'].sum().reset_index()
+    monthly_installs['Last Updated'] = monthly_installs['Last Updated'].astype(str)
+    fig4 = px.line(monthly_installs, x='Last Updated', y='Installs', markers=True, title='Cumulative Installs Over Time')
+    charts['task4'] = pio.to_html(fig4, full_html=False, include_plotlyjs=False)
 
     # Task 5 - App Size vs Rating Bubble Chart
-    fig, ax = plt.subplots(figsize=(6,4))
-    sizes = [15, 30, 25, 10]
-    ratings = [4.5, 4.2, 4.0, 3.8]
-    ax.scatter(sizes, ratings, s=[s*20 for s in sizes], c='purple', alpha=0.6)
-    ax.set_xlabel("App Size (MB)")
-    ax.set_ylabel("Rating")
-    ax.set_title("App Size vs Rating Bubble Chart")
-    charts['task5'] = plot_to_base64(fig)
+    fig5 = px.scatter(df, x='Size', y='Rating', size='Size', hover_data=['App'], title='App Size vs Rating Bubble Chart', color='Rating', color_continuous_scale='Viridis')
+    charts['task5'] = pio.to_html(fig5, full_html=False, include_plotlyjs=False)
 
     # Task 6 - Total Installs Trend
-    fig, ax = plt.subplots(figsize=(6,4))
-    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-    installs_trend = [1000, 3000, 2500, 4000, 3500]
-    ax.plot(days, installs_trend, color='red', marker='o')
-    ax.set_title("Total Installs Trend")
-    ax.set_ylabel("Installs")
-    charts['task6'] = plot_to_base64(fig)
+    daily_installs = df.groupby(df['Last Updated'].dt.date)['Installs'].sum().reset_index()
+    fig6 = px.line(daily_installs, x='Last Updated', y='Installs', markers=True, title='Total Installs Trend')
+    charts['task6'] = pio.to_html(fig6, full_html=False, include_plotlyjs=False)
 
     return charts
 
@@ -81,21 +66,22 @@ def open_dashboard():
     now = datetime.now(tz)
     current_hour = now.hour
 
-    charts = generate_charts()
+    df = load_data()
+    charts = generate_charts(df)
 
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>Google Play Store Dashboard</title>
+        <title>Google Play Store Analytics Dashboard</title>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
-            body{{font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f9f9f9;}}
+            body{{font-family: Arial, sans-serif; margin:20px; background:#f9f9f9;}}
             .header{{display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:30px;}}
             .header img{{height:40px;}}
             h1{{font-size:24px; margin:0;}}
-            .task{{margin-bottom:40px; padding:15px; background:white; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}}
-            img.chart{{width:100%; border:1px solid #ccc;}}
+            .task{{margin-bottom:50px; padding:15px; background:white; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}}
             .warning{{color:red; font-weight:bold; margin-top:10px;}}
         </style>
     </head>
@@ -106,20 +92,20 @@ def open_dashboard():
         </div>
     """
 
-    # ---------------- Task 1 (Always Visible) ----------------
+    # Task 1
     html += f"""
     <div class="task">
         <h2>Task 1 – Ratings vs Reviews</h2>
-        <img class="chart" src="data:image/png;base64,{charts['task1']}">
+        {charts['task1']}
     </div>
     """
 
-    # ---------------- Task 2 (1 PM – 2 PM) ----------------
+    # Task 2 - 1PM–2PM
     if 13 <= current_hour < 14:
         html += f"""
         <div class="task">
             <h2>Task 2 – Free vs Paid Apps</h2>
-            <img class="chart" src="data:image/png;base64,{charts['task2']}">
+            {charts['task2']}
         </div>
         """
     else:
@@ -130,12 +116,12 @@ def open_dashboard():
         </div>
         """
 
-    # ---------------- Task 3 (6 PM – 8 PM) ----------------
+    # Task 3 - 6PM–8PM
     if 18 <= current_hour < 20:
         html += f"""
         <div class="task">
             <h2>Task 3 – Category Install Distribution</h2>
-            <img class="chart" src="data:image/png;base64,{charts['task3']}">
+            {charts['task3']}
         </div>
         """
     else:
@@ -146,12 +132,12 @@ def open_dashboard():
         </div>
         """
 
-    # ---------------- Task 4 (4 PM – 6 PM) ----------------
+    # Task 4 - 4PM–6PM
     if 16 <= current_hour < 18:
         html += f"""
         <div class="task">
             <h2>Task 4 – Cumulative Installs Over Time</h2>
-            <img class="chart" src="data:image/png;base64,{charts['task4']}">
+            {charts['task4']}
         </div>
         """
     else:
@@ -162,12 +148,12 @@ def open_dashboard():
         </div>
         """
 
-    # ---------------- Task 5 (5 PM – 7 PM) ----------------
+    # Task 5 - 5PM–7PM
     if 17 <= current_hour < 19:
         html += f"""
         <div class="task">
             <h2>Task 5 – App Size vs Rating Bubble Chart</h2>
-            <img class="chart" src="data:image/png;base64,{charts['task5']}">
+            {charts['task5']}
         </div>
         """
     else:
@@ -178,12 +164,12 @@ def open_dashboard():
         </div>
         """
 
-    # ---------------- Task 6 (6 PM – 9 PM) ----------------
+    # Task 6 - 6PM–9PM
     if 18 <= current_hour < 21:
         html += f"""
         <div class="task">
             <h2>Task 6 – Total Installs Trend</h2>
-            <img class="chart" src="data:image/png;base64,{charts['task6']}">
+            {charts['task6']}
         </div>
         """
     else:
@@ -194,13 +180,8 @@ def open_dashboard():
         </div>
         """
 
-    # ---------------- End HTML ----------------
-    html += """
-    </body>
-    </html>
-    """
+    html += "</body></html>"
 
-    # ---------------- Write and Open ----------------
     file_name = "dashboard.html"
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(html)
