@@ -1,164 +1,211 @@
 import os
+import io
+import base64
 import webbrowser
 from datetime import datetime
 import pytz
+import matplotlib.pyplot as plt
 
+# ---------------- Helper to Convert Plot to Base64 ----------------
+def plot_to_base64(fig):
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close(fig)
+    return img_base64
+
+# ---------------- Generate Sample Charts ----------------
+def generate_charts():
+    charts = {}
+
+    # Task 1 - Ratings vs Reviews
+    fig, ax = plt.subplots(figsize=(6,4))
+    apps = ['App A', 'App B', 'App C', 'App D']
+    ratings = [4.2, 4.5, 4.0, 3.8]
+    ax.bar(apps, ratings, color='skyblue')
+    ax.set_title("Ratings vs Reviews")
+    ax.set_ylabel("Rating")
+    charts['task1'] = plot_to_base64(fig)
+
+    # Task 2 - Free vs Paid Apps
+    fig, ax = plt.subplots(figsize=(6,4))
+    types = ['Free', 'Paid']
+    counts = [120, 45]
+    ax.pie(counts, labels=types, autopct='%1.1f%%', colors=['#FF9999','#66B3FF'])
+    ax.set_title("Free vs Paid Apps")
+    charts['task2'] = plot_to_base64(fig)
+
+    # Task 3 - Category Install Distribution
+    fig, ax = plt.subplots(figsize=(6,4))
+    categories = ['Game', 'Tools', 'Social', 'Education']
+    installs = [500000, 300000, 450000, 200000]
+    ax.bar(categories, installs, color='orange')
+    ax.set_title("Category Install Distribution")
+    ax.set_ylabel("Installs")
+    charts['task3'] = plot_to_base64(fig)
+
+    # Task 4 - Cumulative Installs Over Time
+    fig, ax = plt.subplots(figsize=(6,4))
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May']
+    cum_installs = [10000, 25000, 40000, 60000, 85000]
+    ax.plot(months, cum_installs, marker='o', color='green')
+    ax.set_title("Cumulative Installs Over Time")
+    ax.set_ylabel("Installs")
+    charts['task4'] = plot_to_base64(fig)
+
+    # Task 5 - App Size vs Rating Bubble Chart
+    fig, ax = plt.subplots(figsize=(6,4))
+    sizes = [15, 30, 25, 10]
+    ratings = [4.5, 4.2, 4.0, 3.8]
+    ax.scatter(sizes, ratings, s=[s*20 for s in sizes], c='purple', alpha=0.6)
+    ax.set_xlabel("App Size (MB)")
+    ax.set_ylabel("Rating")
+    ax.set_title("App Size vs Rating Bubble Chart")
+    charts['task5'] = plot_to_base64(fig)
+
+    # Task 6 - Total Installs Trend
+    fig, ax = plt.subplots(figsize=(6,4))
+    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+    installs_trend = [1000, 3000, 2500, 4000, 3500]
+    ax.plot(days, installs_trend, color='red', marker='o')
+    ax.set_title("Total Installs Trend")
+    ax.set_ylabel("Installs")
+    charts['task6'] = plot_to_base64(fig)
+
+    return charts
+
+# ---------------- Build Dashboard ----------------
 def open_dashboard():
-    # ----------------- Time Setup -----------------
     tz = pytz.timezone("Asia/Kolkata")
     now = datetime.now(tz)
     current_hour = now.hour
 
-    # ----------------- HTML Start -----------------
-    dashboard_html = """
+    charts = generate_charts()
+
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <title>Google Play Store Dashboard</title>
         <style>
-            body{
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background: white;
-            }
-            .header{
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 15px;
-                margin-bottom: 30px;
-            }
-            .header img{
-                height: 40px;
-            }
-            h1{
-                font-size: 24px;
-                margin: 0;
-            }
-            .task{
-                margin-bottom: 40px;
-            }
-            iframe{
-                width: 100%;
-                height: 450px;
-                border: 1px solid #ccc;
-            }
-            .warning{
-                color: red;
-                font-weight: bold;
-                margin-bottom: 20px;
-            }
+            body{{font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f9f9f9;}}
+            .header{{display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:30px;}}
+            .header img{{height:40px;}}
+            h1{{font-size:24px; margin:0;}}
+            .task{{margin-bottom:40px; padding:15px; background:white; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}}
+            img.chart{{width:100%; border:1px solid #ccc;}}
+            .warning{{color:red; font-weight:bold; margin-top:10px;}}
         </style>
     </head>
     <body>
-    <div class="header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg">
-        <h1>Google Play Store Analytics Dashboard</h1>
-    </div>
+        <div class="header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg">
+            <h1>Google Play Store Analytics Dashboard</h1>
+        </div>
     """
 
-    # ----------------- Task 1 (No Time Restriction) -----------------
-    dashboard_html += """
+    # ---------------- Task 1 (Always Visible) ----------------
+    html += f"""
     <div class="task">
         <h2>Task 1 – Ratings vs Reviews</h2>
-        <iframe src="task1.html"></iframe>
+        <img class="chart" src="data:image/png;base64,{charts['task1']}">
     </div>
     """
 
-    # ----------------- Task 2 (1 PM – 2 PM IST) -----------------
+    # ---------------- Task 2 (1 PM – 2 PM) ----------------
     if 13 <= current_hour < 14:
-        dashboard_html += """
+        html += f"""
         <div class="task">
             <h2>Task 2 – Free vs Paid Apps</h2>
-            <iframe src="task2.html"></iframe>
+            <img class="chart" src="data:image/png;base64,{charts['task2']}">
         </div>
         """
     else:
-        dashboard_html += """
+        html += """
         <div class="task">
             <h2>Task 2 – Free vs Paid Apps</h2>
             <div class="warning">Available only between 1 PM and 2 PM IST.</div>
         </div>
         """
 
-    # ----------------- Task 3 (6 PM – 8 PM IST) -----------------
+    # ---------------- Task 3 (6 PM – 8 PM) ----------------
     if 18 <= current_hour < 20:
-        dashboard_html += """
+        html += f"""
         <div class="task">
             <h2>Task 3 – Category Install Distribution</h2>
-            <iframe src="task3.html"></iframe>
+            <img class="chart" src="data:image/png;base64,{charts['task3']}">
         </div>
         """
     else:
-        dashboard_html += """
+        html += """
         <div class="task">
             <h2>Task 3 – Category Install Distribution</h2>
             <div class="warning">Available only between 6 PM and 8 PM IST.</div>
         </div>
         """
 
-    # ----------------- Task 4 (4 PM – 6 PM IST) -----------------
+    # ---------------- Task 4 (4 PM – 6 PM) ----------------
     if 16 <= current_hour < 18:
-        dashboard_html += """
+        html += f"""
         <div class="task">
             <h2>Task 4 – Cumulative Installs Over Time</h2>
-            <iframe src="task4.html"></iframe>
+            <img class="chart" src="data:image/png;base64,{charts['task4']}">
         </div>
         """
     else:
-        dashboard_html += """
+        html += """
         <div class="task">
             <h2>Task 4 – Cumulative Installs Over Time</h2>
             <div class="warning">Available only between 4 PM and 6 PM IST.</div>
         </div>
         """
 
-    # ----------------- Task 5 (5 PM – 7 PM IST) -----------------
+    # ---------------- Task 5 (5 PM – 7 PM) ----------------
     if 17 <= current_hour < 19:
-        dashboard_html += """
+        html += f"""
         <div class="task">
             <h2>Task 5 – App Size vs Rating Bubble Chart</h2>
-            <iframe src="task5.html"></iframe>
+            <img class="chart" src="data:image/png;base64,{charts['task5']}">
         </div>
         """
     else:
-        dashboard_html += """
+        html += """
         <div class="task">
             <h2>Task 5 – App Size vs Rating Bubble Chart</h2>
             <div class="warning">Available only between 5 PM and 7 PM IST.</div>
         </div>
         """
 
-    # ----------------- Task 6 (6 PM – 9 PM IST) -----------------
+    # ---------------- Task 6 (6 PM – 9 PM) ----------------
     if 18 <= current_hour < 21:
-        dashboard_html += """
+        html += f"""
         <div class="task">
             <h2>Task 6 – Total Installs Trend</h2>
-            <iframe src="task6.html"></iframe>
+            <img class="chart" src="data:image/png;base64,{charts['task6']}">
         </div>
         """
     else:
-        dashboard_html += """
+        html += """
         <div class="task">
             <h2>Task 6 – Total Installs Trend</h2>
             <div class="warning">Available only between 6 PM and 9 PM IST.</div>
         </div>
         """
 
-    # ----------------- HTML End -----------------
-    dashboard_html += """
+    # ---------------- End HTML ----------------
+    html += """
     </body>
     </html>
     """
 
-    # ----------------- Write and Open -----------------
+    # ---------------- Write and Open ----------------
     file_name = "dashboard.html"
     with open(file_name, "w", encoding="utf-8") as f:
-        f.write(dashboard_html)
+        f.write(html)
 
     webbrowser.open("file://" + os.path.abspath(file_name))
 
-# ----------------- Run -----------------
+# ---------------- Run ----------------
 open_dashboard()
