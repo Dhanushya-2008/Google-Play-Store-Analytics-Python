@@ -8,10 +8,8 @@ import plotly.io as pio
 
 # ---------------- Load Dataset ----------------
 def load_data():
-    file_path = "googleplaystore.csv"  # Replace with your CSV
+    file_path = "googleplaystore.csv"  # Replace with your CSV path
     df = pd.read_csv(file_path)
-    
-    # Basic cleaning
     df = df.dropna(subset=['Rating'])
     df['Installs'] = df['Installs'].str.replace('[+,]', '', regex=True).astype(int)
     df['Reviews'] = pd.to_numeric(df['Reviews'], errors='coerce')
@@ -20,7 +18,6 @@ def load_data():
     
     df['Size'] = df['Size'].replace('Varies with device', '0')
     df['Size'] = df['Size'].str.replace('M','').str.replace('k','').astype(float)
-    
     return df
 
 # ---------------- Generate Interactive Charts ----------------
@@ -29,12 +26,12 @@ def generate_charts(df):
 
     # Task 1 - Ratings vs Reviews
     top_reviews = df.nlargest(10, 'Reviews')
-    fig1 = px.bar(top_reviews, x='App', y='Rating', title='Ratings vs Reviews (Top 10)', text='Rating')
+    fig1 = px.bar(top_reviews, x='App', y='Rating', text='Rating', title='Ratings vs Reviews (Top 10)')
     charts['task1'] = pio.to_html(fig1, full_html=False, include_plotlyjs='cdn')
 
     # Task 2 - Free vs Paid Apps
     type_counts = df['Type'].value_counts().reset_index()
-    type_counts.columns = ['Type', 'Count']
+    type_counts.columns = ['Type','Count']
     fig2 = px.pie(type_counts, names='Type', values='Count', title='Free vs Paid Apps')
     charts['task2'] = pio.to_html(fig2, full_html=False, include_plotlyjs=False)
 
@@ -50,7 +47,7 @@ def generate_charts(df):
     charts['task4'] = pio.to_html(fig4, full_html=False, include_plotlyjs=False)
 
     # Task 5 - App Size vs Rating Bubble Chart
-    fig5 = px.scatter(df, x='Size', y='Rating', size='Size', hover_data=['App'], title='App Size vs Rating Bubble Chart', color='Rating', color_continuous_scale='Viridis')
+    fig5 = px.scatter(df, x='Size', y='Rating', size='Size', hover_data=['App'], color='Rating', color_continuous_scale='Viridis', title='App Size vs Rating Bubble Chart')
     charts['task5'] = pio.to_html(fig5, full_html=False, include_plotlyjs=False)
 
     # Task 6 - Total Installs Trend
@@ -92,7 +89,7 @@ def open_dashboard():
         </div>
     """
 
-    # Task 1
+    # Task 1 - Always visible
     html += f"""
     <div class="task">
         <h2>Task 1 – Ratings vs Reviews</h2>
@@ -182,7 +179,8 @@ def open_dashboard():
 
     html += "</body></html>"
 
-    file_name = "dashboard.html"
+    # Save as index.html
+    file_name = "index.html"
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(html)
 
