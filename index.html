@@ -20,7 +20,7 @@ def load_data():
     df['Size'] = df['Size'].str.replace('M','').str.replace('k','').astype(float)
     return df
 
-# ---------------- Generate Interactive Charts ----------------
+# ---------------- Generate Charts ----------------
 def generate_charts(df):
     charts = {}
 
