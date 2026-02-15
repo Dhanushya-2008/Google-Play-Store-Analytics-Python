@@ -18,6 +18,47 @@
     <!-- Task Containers -->
     <div class="chart-container">
         <h2>Task 1 - Top Categories (1–2 PM IST)</h2>
+        <div id="task1Chart" class="hi…
+[5:21 pm, 15/2/2026] 𝕯𝖍𝖆𝖓𝖚🫶🏻🎀: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Play Store Analytics Dashboard</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: linear-gradient(135deg, #FBC2EB, #A18CD1); /* soft pink → purple gradient */
+            color: #111;           /* dark text for readability */
+        }
+        h1, h2 { 
+            text-align: center; 
+            color: #4B0082;        /* rich purple headings */
+        }
+        .chart-container { 
+            width: 90%; 
+            margin: 40px auto; 
+        }
+        .hidden { display: none; }
+        .placeholder { 
+            text-align: center; 
+            color: #555;           /* subtle placeholder text */
+            font-size: 16px; 
+            margin-top: 200px; 
+        }
+        iframe { 
+            border: none; 
+            width: 100%; 
+            height: 500px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Play Store Analytics Dashboard</h1>
+
+    <!-- Task Containers -->
+    <div class="chart-container">
+        <h2>Task 1 - Top Categories (1–2 PM IST)</h2>
         <div id="task1Chart" class="hidden">
             <iframe src="dashboard_html/Category_Graph_1.html"></iframe>
         </div>
@@ -65,7 +106,6 @@
     </div>
 
     <script>
-        // Get current IST hour
         function getISTHour() {
             const now = new Date();
             const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -73,13 +113,11 @@
             return ist.getHours();
         }
 
-        // Show chart and hide placeholder
         function showChart(chartId, messageId){
             document.getElementById(chartId).classList.remove('hidden');
             document.getElementById(messageId).classList.add('hidden');
         }
 
-        // Hide all charts and show placeholders
         function hideAllCharts() {
             for(let i=1; i<=6; i++){
                 document.getElementById(task${i}Chart).classList.add('hidden');
@@ -87,41 +125,19 @@
             }
         }
 
-        // Check which charts to show based on IST time
         function checkCharts() {
             const hour = getISTHour();
             hideAllCharts();
 
-            // Task 1: 1–2 PM
-            if(hour >= 13 && hour < 14){
-                showChart('task1Chart','task1Message');
-            }
-            // Task 2: 3–5 PM
-            if(hour >= 15 && hour < 17){
-                showChart('task2Chart','task2Message');
-            }
-            // Task 4: 4–6 PM
-            if(hour >= 16 && hour < 18){
-                showChart('task4Chart','task4Message');
-            }
-            // Task 5: 5–7 PM
-            if(hour >= 17 && hour < 19){
-                showChart('task5Chart','task5Message');
-            }
-            // Task 3: 6–8 PM
-            if(hour >= 18 && hour < 20){
-                showChart('task3Chart','task3Message');
-            }
-            // Task 6: 6–9 PM
-            if(hour >= 18 && hour < 21){
-                showChart('task6Chart','task6Message');
-            }
+            if(hour >= 13 && hour < 14){ showChart('task1Chart','task1Message'); }
+            if(hour >= 15 && hour < 17){ showChart('task2Chart','task2Message'); }
+            if(hour >= 16 && hour < 18){ showChart('task4Chart','task4Message'); }
+            if(hour >= 17 && hour < 19){ showChart('task5Chart','task5Message'); }
+            if(hour >= 18 && hour < 20){ showChart('task3Chart','task3Message'); }
+            if(hour >= 18 && hour < 21){ showChart('task6Chart','task6Message'); }
         }
 
-        // Initial check
         checkCharts();
-
-        // Auto-refresh every minute
         setInterval(checkCharts, 60000);
     </script>
 </body>
