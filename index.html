@@ -60,35 +60,60 @@
             return ist.getHours();
         }
 
-        const hour = getISTHour();
-
         function showChart(chartId, messageId){
             document.getElementById(chartId).classList.remove('hidden');
             document.getElementById(messageId).classList.add('hidden');
         }
 
-        Plotly.d3.csv("Google Playstore Apps.csv", function(err, rows){
-            if(err){ console.error("CSV Load Error:", err); return; }
+        function checkAndShowCharts() {
+            const hour = getISTHour();
 
-            // Task 1: 1–2 PM
-            if(hour === 13){ showChart('task1Chart','task1Message'); /* Add JS chart code here */ }
+            Plotly.d3.csv("Google Playstore Apps.csv", function(err, rows){
+                if(err){ console.error("CSV Load Error:", err); return; }
 
-            // Task 2: 3–5 PM
-            if(hour >= 15 && hour < 17){ showChart('task2Chart','task2Message'); /* Add JS chart code here */ }
+                // Task 1: 1–2 PM
+                if(hour >= 13 && hour < 14){ 
+                    showChart('task1Chart','task1Message'); 
+                    /* Add Plotly code for Task 1 here */ 
+                }
 
-            // Task 3: 6–8 PM
-            if(hour >= 18 && hour < 20){ showChart('task3Chart','task3Message'); /* Add JS chart code here */ }
+                // Task 2: 3–5 PM
+                if(hour >= 15 && hour < 17){ 
+                    showChart('task2Chart','task2Message'); 
+                    /* Add Plotly code for Task 2 here */ 
+                }
 
-            // Task 4: 4–6 PM
-            if(hour >= 16 && hour < 18){ showChart('task4Chart','task4Message'); /* Add JS chart code here */ }
+                // Task 3: 6–8 PM
+                if(hour >= 18 && hour < 20){ 
+                    showChart('task3Chart','task3Message'); 
+                    /* Add Plotly code for Task 3 here */ 
+                }
 
-            // Task 5: 5–7 PM
-            if(hour >= 17 && hour < 19){ showChart('task5Chart','task5Message'); /* Add JS chart code here */ }
+                // Task 4: 4–6 PM
+                if(hour >= 16 && hour < 18){ 
+                    showChart('task4Chart','task4Message'); 
+                    /* Add Plotly code for Task 4 here */ 
+                }
 
-            // Task 6: 6–9 PM
-            if(hour >= 18 && hour < 21){ showChart('task6Chart','task6Message'); /* Add JS chart code here */ }
+                // Task 5: 5–7 PM
+                if(hour >= 17 && hour < 19){ 
+                    showChart('task5Chart','task5Message'); 
+                    /* Add Plotly code for Task 5 here */ 
+                }
 
-        });
+                // Task 6: 6–9 PM
+                if(hour >= 18 && hour < 21){ 
+                    showChart('task6Chart','task6Message'); 
+                    /* Add Plotly code for Task 6 here */ 
+                }
+            });
+        }
+
+        // Initial check
+        checkAndShowCharts();
+
+        // Auto-refresh every 1 minute to update charts if time hits
+        setInterval(checkAndShowCharts, 60000);
     </script>
 </body>
 </html>
