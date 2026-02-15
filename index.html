@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Google Play Store Analytics - Time-Based Tasks</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Google Play Store Analytics Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1, h2 { text-align: center; color: #333; }
+        body { font-family: Arial, sans-serif; margin: 20px; background: #111; color: white; }
+        h1, h2 { text-align: center; color: #fff; }
         .chart-container { width: 90%; margin: 40px auto; }
         .hidden { display: none; }
-        .placeholder { text-align: center; color: #666; font-size: 16px; margin-top: 200px; }
+        .placeholder { text-align: center; color: #ccc; font-size: 16px; margin-top: 200px; }
+        iframe { border: none; }
     </style>
 </head>
 <body>
@@ -17,42 +17,55 @@
 
     <!-- Task Containers -->
     <div class="chart-container">
-        <h2>Task 1 - Dual-axis Free vs Paid Apps (1–2 PM IST)</h2>
-        <div id="task1Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <h2>Task 1 - Top Categories (1–2 PM IST)</h2>
+        <div id="task1Chart" class="hidden" style="width:100%; height:500px;">
+            <iframe src="dashboard_html/Category_Graph_1.html" style="width:100%; height:100%;"></iframe>
+        </div>
         <div id="task1Message" class="placeholder">This chart will appear between 1–2 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Task 2 - Grouped Bar Top 10 Categories (3–5 PM IST)</h2>
-        <div id="task2Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <h2>Task 2 - App Type Distribution (3–5 PM IST)</h2>
+        <div id="task2Chart" class="hidden" style="width:100%; height:500px;">
+            <iframe src="dashboard_html/Type_Graph_2.html" style="width:100%; height:100%;"></iframe>
+        </div>
         <div id="task2Message" class="placeholder">This chart will appear between 3–5 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Task 3 - Choropleth Map Global Installs (6–8 PM IST)</h2>
-        <div id="task3Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <h2>Task 3 - Rating Distribution (6–8 PM IST)</h2>
+        <div id="task3Chart" class="hidden" style="width:100%; height:500px;">
+            <iframe src="dashboard_html/Rating_Graph_3.html" style="width:100%; height:100%;"></iframe>
+        </div>
         <div id="task3Message" class="placeholder">This chart will appear between 6–8 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Task 4 - Stacked Area Cumulative Installs (4–6 PM IST)</h2>
-        <div id="task4Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <h2>Task 4 - Sentiment Distribution (4–6 PM IST)</h2>
+        <div id="task4Chart" class="hidden" style="width:100%; height:500px;">
+            <iframe src="dashboard_html/Sentiment_Graph_4.html" style="width:100%; height:100%;"></iframe>
+        </div>
         <div id="task4Message" class="placeholder">This chart will appear between 4–6 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Task 5 - Bubble Chart Size vs Rating (5–7 PM IST)</h2>
-        <div id="task5Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <h2>Task 5 - Installs by Category (5–7 PM IST)</h2>
+        <div id="task5Chart" class="hidden" style="width:100%; height:500px;">
+            <iframe src="dashboard_html/Installs_Graph_5.html" style="width:100%; height:100%;"></iframe>
+        </div>
         <div id="task5Message" class="placeholder">This chart will appear between 5–7 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Task 6 - Time Series Total Installs (6–9 PM IST)</h2>
-        <div id="task6Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <h2>Task 6 - Updates Over Years (6–9 PM IST)</h2>
+        <div id="task6Chart" class="hidden" style="width:100%; height:500px;">
+            <iframe src="dashboard_html/Updates_Graph_6.html" style="width:100%; height:100%;"></iframe>
+        </div>
         <div id="task6Message" class="placeholder">This chart will appear between 6–9 PM IST</div>
     </div>
 
     <script>
+        // Get current IST hour
         function getISTHour() {
             const now = new Date();
             const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -60,60 +73,45 @@
             return ist.getHours();
         }
 
+        // Show chart and hide placeholder
         function showChart(chartId, messageId){
             document.getElementById(chartId).classList.remove('hidden');
             document.getElementById(messageId).classList.add('hidden');
         }
 
-        function checkAndShowCharts() {
+        // Hide all charts and show placeholders
+        function hideAllCharts() {
+            for(let i=1;i<=6;i++){
+                document.getElementById(task${i}Chart).classList.add('hidden');
+                document.getElementById(task${i}Message).classList.remove('hidden');
+            }
+        }
+
+        // Check which chart to show based on IST time
+        function checkCharts() {
             const hour = getISTHour();
+            hideAllCharts();
 
-            Plotly.d3.csv("Google Playstore Apps.csv", function(err, rows){
-                if(err){ console.error("CSV Load Error:", err); return; }
-
-                // Task 1: 1–2 PM
-                if(hour >= 13 && hour < 14){ 
-                    showChart('task1Chart','task1Message'); 
-                    /* Add Plotly code for Task 1 here */ 
-                }
-
-                // Task 2: 3–5 PM
-                if(hour >= 15 && hour < 17){ 
-                    showChart('task2Chart','task2Message'); 
-                    /* Add Plotly code for Task 2 here */ 
-                }
-
-                // Task 3: 6–8 PM
-                if(hour >= 18 && hour < 20){ 
-                    showChart('task3Chart','task3Message'); 
-                    /* Add Plotly code for Task 3 here */ 
-                }
-
-                // Task 4: 4–6 PM
-                if(hour >= 16 && hour < 18){ 
-                    showChart('task4Chart','task4Message'); 
-                    /* Add Plotly code for Task 4 here */ 
-                }
-
-                // Task 5: 5–7 PM
-                if(hour >= 17 && hour < 19){ 
-                    showChart('task5Chart','task5Message'); 
-                    /* Add Plotly code for Task 5 here */ 
-                }
-
-                // Task 6: 6–9 PM
-                if(hour >= 18 && hour < 21){ 
-                    showChart('task6Chart','task6Message'); 
-                    /* Add Plotly code for Task 6 here */ 
-                }
-            });
+            if(hour >= 13 && hour < 14){
+                showChart('task1Chart','task1Message');
+            } else if(hour >= 15 && hour < 17){
+                showChart('task2Chart','task2Message');
+            } else if(hour >= 16 && hour < 18){
+                showChart('task4Chart','task4Message');
+            } else if(hour >= 17 && hour < 19){
+                showChart('task5Chart','task5Message');
+            } else if(hour >= 18 && hour < 20){
+                showChart('task3Chart','task3Message');
+            } else if(hour >= 18 && hour < 21){
+                showChart('task6Chart','task6Message');
+            }
         }
 
         // Initial check
-        checkAndShowCharts();
+        checkCharts();
 
-        // Auto-refresh every 1 minute to update charts if time hits
-        setInterval(checkAndShowCharts, 60000);
+        // Auto-refresh every minute
+        setInterval(checkCharts, 60000);
     </script>
 </body>
 </html>
