@@ -212,3 +212,4 @@
  "nbformat": 4,
  "nbformat_minor": 5
 }
+fig4.write_html("dashboard_html/Sentiment_Graph_4.html") 
