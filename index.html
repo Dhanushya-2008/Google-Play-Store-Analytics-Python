@@ -136,14 +136,22 @@
         }
 
         function showChart(chartId, messageId) {
-            document.getElementById(chartId).classList.remove('hidden');
-            document.getElementById(messageId).classList.add('hidden');
+            const chart = document.getElementById(chartId);
+            const message = document.getElementById(messageId);
+            if (chart && message) {
+                chart.classList.remove('hidden');
+                message.classList.add('hidden');
+            }
         }
 
         function hideAllCharts() {
             for (let i = 1; i <= 6; i++) {
-                document.getElementById(task${i}Chart).classList.add('hidden');
-                document.getElementById(task${i}Message).classList.remove('hidden');
+                const chart = document.getElementById(task${i}Chart);
+                const message = document.getElementById(task${i}Message);
+                if (chart && message) {
+                    chart.classList.add('hidden');
+                    message.classList.remove('hidden');
+                }
             }
         }
 
@@ -159,8 +167,10 @@
             if (hour >= 18 && hour < 21) showChart('task6Chart', 'task6Message');
         }
 
-        checkCharts();
-        setInterval(checkCharts, 60000);
+        document.addEventListener("DOMContentLoaded", function() {
+            checkCharts();
+            setInterval(checkCharts, 60000);
+        });
     </script>
 
 </body>
