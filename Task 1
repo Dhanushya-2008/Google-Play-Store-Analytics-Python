@@ -129,3 +129,4 @@
  "nbformat": 4,
  "nbformat_minor": 5
 }
+fig1.write_html("dashboard_html/Category_Graph_1.html") 
