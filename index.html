@@ -2,98 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Google Play Store Analytics</title>
+    <title>Google Play Store Analytics - Time-Based Tasks</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { text-align: center; color: #333; }
+        h1, h2 { text-align: center; color: #333; }
         .chart-container { width: 90%; margin: 40px auto; }
+        .hidden { display: none; }
+        .placeholder { text-align: center; color: #666; font-size: 16px; margin-top: 200px; }
     </style>
 </head>
 <body>
     <h1>Google Play Store Analytics Dashboard</h1>
 
+    <!-- Task Containers -->
     <div class="chart-container">
-        <h2>Number of Apps by Category</h2>
-        <div id="categoryChart" style="width:100%; height:500px;"></div>
+        <h2>Task 1 - Dual-axis Free vs Paid Apps (1–2 PM IST)</h2>
+        <div id="task1Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <div id="task1Message" class="placeholder">This chart will appear between 1–2 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Free vs Paid Apps</h2>
-        <div id="typeChart" style="width:100%; height:500px;"></div>
+        <h2>Task 2 - Grouped Bar Top 10 Categories (3–5 PM IST)</h2>
+        <div id="task2Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <div id="task2Message" class="placeholder">This chart will appear between 3–5 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Average Rating by Category</h2>
-        <div id="ratingChart" style="width:100%; height:500px;"></div>
+        <h2>Task 3 - Choropleth Map Global Installs (6–8 PM IST)</h2>
+        <div id="task3Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <div id="task3Message" class="placeholder">This chart will appear between 6–8 PM IST</div>
     </div>
 
     <div class="chart-container">
-        <h2>Top 20 Apps by Reviews</h2>
-        <div id="reviewsChart" style="width:100%; height:500px;"></div>
+        <h2>Task 4 - Stacked Area Cumulative Installs (4–6 PM IST)</h2>
+        <div id="task4Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <div id="task4Message" class="placeholder">This chart will appear between 4–6 PM IST</div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Task 5 - Bubble Chart Size vs Rating (5–7 PM IST)</h2>
+        <div id="task5Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <div id="task5Message" class="placeholder">This chart will appear between 5–7 PM IST</div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Task 6 - Time Series Total Installs (6–9 PM IST)</h2>
+        <div id="task6Chart" class="hidden" style="width:100%; height:500px;"></div>
+        <div id="task6Message" class="placeholder">This chart will appear between 6–9 PM IST</div>
     </div>
 
     <script>
-        Plotly.d3.csv("Google Playstore Apps.csv", function(err, rows) {
-            if(err) { console.error("Error loading CSV:", err); return; }
+        function getISTHour() {
+            const now = new Date();
+            const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+            const ist = new Date(utc + 5.5*60*60*1000);
+            return ist.getHours();
+        }
 
-            // ----- Category Count -----
-            var categoryCounts = {};
-            rows.forEach(r => { categoryCounts[r.Category] = (categoryCounts[r.Category]||0) + 1; });
-            var categories = Object.keys(categoryCounts);
-            var counts = Object.values(categoryCounts);
+        const hour = getISTHour();
 
-            Plotly.newPlot('categoryChart', [{
-                x: categories,
-                y: counts,
-                type: 'bar',
-                marker: {color: 'rgb(100,200,255)'}
-            }], {
-                xaxis:{title:'Category'}, yaxis:{title:'Number of Apps'}
-            });
+        function showChart(chartId, messageId){
+            document.getElementById(chartId).classList.remove('hidden');
+            document.getElementById(messageId).classList.add('hidden');
+        }
 
-            // ----- Free vs Paid -----
-            var typeCounts = {Free:0, Paid:0};
-            rows.forEach(r => { typeCounts[r.Type] = (typeCounts[r.Type]||0)+1; });
-            Plotly.newPlot('typeChart', [{
-                labels: Object.keys(typeCounts),
-                values: Object.values(typeCounts),
-                type: 'pie'
-            }], {
-                showlegend:true
-            });
+        Plotly.d3.csv("Google Playstore Apps.csv", function(err, rows){
+            if(err){ console.error("CSV Load Error:", err); return; }
 
-            // ----- Average Rating by Category -----
-            var ratingSums = {}, ratingCounts = {};
-            rows.forEach(r=>{
-                var cat = r.Category, rating = parseFloat(r.Rating);
-                if(!isNaN(rating)){
-                    ratingSums[cat] = (ratingSums[cat]||0) + rating;
-                    ratingCounts[cat] = (ratingCounts[cat]||0) + 1;
-                }
-            });
-            var avgRatings = categories.map(c => ratingSums[c]/ratingCounts[c]);
-            Plotly.newPlot('ratingChart', [{
-                x: categories,
-                y: avgRatings,
-                type: 'bar',
-                marker:{color:'rgb(255,165,0)'}
-            }], {
-                xaxis:{title:'Category'}, yaxis:{title:'Average Rating'}
-            });
+            // Task 1: 1–2 PM
+            if(hour === 13){ showChart('task1Chart','task1Message'); /* Add JS chart code here */ }
 
-            // ----- Top 20 Apps by Reviews -----
-            var appsWithReviews = rows.map(r=>({app:r.App, reviews:parseInt(r.Reviews.replace(/,/g,''))||0}));
-            appsWithReviews.sort((a,b)=>b.reviews - a.reviews);
-            var topApps = appsWithReviews.slice(0,20);
-            Plotly.newPlot('reviewsChart', [{
-                x: topApps.map(a=>a.app),
-                y: topApps.map(a=>a.reviews),
-                type:'bar',
-                marker:{color:'rgb(150,50,200)'}
-            }], {
-                xaxis:{title:'App', tickangle:-45}, yaxis:{title:'Number of Reviews'}
-            });
+            // Task 2: 3–5 PM
+            if(hour >= 15 && hour < 17){ showChart('task2Chart','task2Message'); /* Add JS chart code here */ }
+
+            // Task 3: 6–8 PM
+            if(hour >= 18 && hour < 20){ showChart('task3Chart','task3Message'); /* Add JS chart code here */ }
+
+            // Task 4: 4–6 PM
+            if(hour >= 16 && hour < 18){ showChart('task4Chart','task4Message'); /* Add JS chart code here */ }
+
+            // Task 5: 5–7 PM
+            if(hour >= 17 && hour < 19){ showChart('task5Chart','task5Message'); /* Add JS chart code here */ }
+
+            // Task 6: 6–9 PM
+            if(hour >= 18 && hour < 21){ showChart('task6Chart','task6Message'); /* Add JS chart code here */ }
+
         });
     </script>
 </body>
