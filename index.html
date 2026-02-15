@@ -3,123 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <title>Google Play Store Analytics Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #111; color: white; }
-        h1, h2 { text-align: center; color: #fff; }
-        .chart-container { width: 90%; margin: 40px auto; }
-        .hidden { display: none; }
-        .placeholder { text-align: center; color: #ccc; font-size: 16px; margin-top: 200px; }
-        iframe { border: none; width: 100%; height: 500px; }
-    </style>
-</head>
-<body>
-    <h1>Google Play Store Analytics Dashboard</h1>
 
-    <!-- Task Containers -->
-    <div class="chart-container">
-        <h2>Task 1 - Top Categories (1–2 PM IST)</h2>
-        <div id="task1Chart" class="hi…
-[5:21 pm, 15/2/2026] 𝕯𝖍𝖆𝖓𝖚🫶🏻🎀: <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Google Play Store Analytics Dashboard</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
             margin: 20px; 
-            background: linear-gradient(135deg, #FBC2EB, #A18CD1); /* soft pink → purple gradient */
-            color: #111;           /* dark text for readability */
+            background: linear-gradient(135deg, #FBC2EB, #A18CD1);
+            color: white;
         }
-        h1, h2 { 
+
+        h1 {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 40px;
+        }
+
+        h2 { 
             text-align: center; 
-            color: #4B0082;        /* rich purple headings */
+            margin-bottom: 20px;
         }
+
         .chart-container { 
             width: 90%; 
-            margin: 40px auto; 
+            margin: 50px auto; 
+            padding: 25px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
         }
+
+        .chart-container:hover {
+            transform: translateY(-6px);
+        }
+
         .hidden { display: none; }
+
         .placeholder { 
             text-align: center; 
-            color: #555;           /* subtle placeholder text */
+            color: #f3f3f3;
             font-size: 16px; 
-            margin-top: 200px; 
+            margin-top: 180px; 
         }
+
         iframe { 
             border: none; 
             width: 100%; 
             height: 500px; 
+            border-radius: 15px;
+            background: white;
         }
     </style>
 </head>
+
 <body>
+
     <h1>Google Play Store Analytics Dashboard</h1>
 
-    <!-- Task Containers -->
+    <!-- Task 1 -->
     <div class="chart-container">
         <h2>Task 1 - Top Categories (1–2 PM IST)</h2>
         <div id="task1Chart" class="hidden">
             <iframe src="dashboard_html/Category_Graph_1.html"></iframe>
         </div>
-        <div id="task1Message" class="placeholder">This chart will appear between 1–2 PM IST</div>
+        <div id="task1Message" class="placeholder">
+            This chart will appear between 1–2 PM IST
+        </div>
     </div>
 
+    <!-- Task 2 -->
     <div class="chart-container">
         <h2>Task 2 - App Type Distribution (3–5 PM IST)</h2>
         <div id="task2Chart" class="hidden">
             <iframe src="dashboard_html/Type_Graph_2.html"></iframe>
         </div>
-        <div id="task2Message" class="placeholder">This chart will appear between 3–5 PM IST</div>
+        <div id="task2Message" class="placeholder">
+            This chart will appear between 3–5 PM IST
+        </div>
     </div>
 
+    <!-- Task 3 -->
     <div class="chart-container">
         <h2>Task 3 - Rating Distribution (6–8 PM IST)</h2>
         <div id="task3Chart" class="hidden">
             <iframe src="dashboard_html/Rating_Graph_3.html"></iframe>
         </div>
-        <div id="task3Message" class="placeholder">This chart will appear between 6–8 PM IST</div>
+        <div id="task3Message" class="placeholder">
+            This chart will appear between 6–8 PM IST
+        </div>
     </div>
 
+    <!-- Task 4 -->
     <div class="chart-container">
         <h2>Task 4 - Sentiment Distribution (4–6 PM IST)</h2>
         <div id="task4Chart" class="hidden">
             <iframe src="dashboard_html/Sentiment_Graph_4.html"></iframe>
         </div>
-        <div id="task4Message" class="placeholder">This chart will appear between 4–6 PM IST</div>
+        <div id="task4Message" class="placeholder">
+            This chart will appear between 4–6 PM IST
+        </div>
     </div>
 
+    <!-- Task 5 -->
     <div class="chart-container">
         <h2>Task 5 - Installs by Category (5–7 PM IST)</h2>
         <div id="task5Chart" class="hidden">
             <iframe src="dashboard_html/Installs_Graph_5.html"></iframe>
         </div>
-        <div id="task5Message" class="placeholder">This chart will appear between 5–7 PM IST</div>
+        <div id="task5Message" class="placeholder">
+            This chart will appear between 5–7 PM IST
+        </div>
     </div>
 
+    <!-- Task 6 -->
     <div class="chart-container">
         <h2>Task 6 - Updates Over Years (6–9 PM IST)</h2>
         <div id="task6Chart" class="hidden">
             <iframe src="dashboard_html/Updates_Graph_6.html"></iframe>
         </div>
-        <div id="task6Message" class="placeholder">This chart will appear between 6–9 PM IST</div>
+        <div id="task6Message" class="placeholder">
+            This chart will appear between 6–9 PM IST
+        </div>
     </div>
 
     <script>
         function getISTHour() {
             const now = new Date();
             const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-            const ist = new Date(utc + 5.5*60*60*1000);
+            const ist = new Date(utc + 5.5 * 60 * 60 * 1000);
             return ist.getHours();
         }
 
-        function showChart(chartId, messageId){
+        function showChart(chartId, messageId) {
             document.getElementById(chartId).classList.remove('hidden');
             document.getElementById(messageId).classList.add('hidden');
         }
 
         function hideAllCharts() {
-            for(let i=1; i<=6; i++){
+            for (let i = 1; i <= 6; i++) {
                 document.getElementById(task${i}Chart).classList.add('hidden');
                 document.getElementById(task${i}Message).classList.remove('hidden');
             }
@@ -129,16 +151,17 @@
             const hour = getISTHour();
             hideAllCharts();
 
-            if(hour >= 13 && hour < 14){ showChart('task1Chart','task1Message'); }
-            if(hour >= 15 && hour < 17){ showChart('task2Chart','task2Message'); }
-            if(hour >= 16 && hour < 18){ showChart('task4Chart','task4Message'); }
-            if(hour >= 17 && hour < 19){ showChart('task5Chart','task5Message'); }
-            if(hour >= 18 && hour < 20){ showChart('task3Chart','task3Message'); }
-            if(hour >= 18 && hour < 21){ showChart('task6Chart','task6Message'); }
+            if (hour >= 13 && hour < 14) showChart('task1Chart', 'task1Message');
+            if (hour >= 15 && hour < 17) showChart('task2Chart', 'task2Message');
+            if (hour >= 16 && hour < 18) showChart('task4Chart', 'task4Message');
+            if (hour >= 17 && hour < 19) showChart('task5Chart', 'task5Message');
+            if (hour >= 18 && hour < 20) showChart('task3Chart', 'task3Message');
+            if (hour >= 18 && hour < 21) showChart('task6Chart', 'task6Message');
         }
 
         checkCharts();
         setInterval(checkCharts, 60000);
     </script>
+
 </body>
 </html>
